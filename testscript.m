@@ -17,9 +17,12 @@ for patch_start_row = 1:(num_rows-patch_size+1) % Iterating over all possible pa
         alpha = eigs(double(A.' * A), 1) + 1;
         
         theta = 255*rand(64, 1);
-        for iter=1:100
+        %Check thresholding
+        for iter=1:1000
             theta = wthresh(theta + (1/alpha) * A.' * (y - A*theta), 's', lambda/(2*alpha));
         end
+        
+        %Check DCT and conversions
         
         % Converting DCT coeffs to image patch
         x = idct2( reshape(theta, [8,8]).');
@@ -32,5 +35,8 @@ for patch_start_row = 1:(num_rows-patch_size+1) % Iterating over all possible pa
 
         all_weights(patch_start_row:patch_start_row+patch_size-1,patch_start_column:patch_start_column+patch_size-1) ...
             = (weights+1);
+       
     end
+    disp(patch_start_row) 
 end
+imshow(uint8(reconstructed_frames))
