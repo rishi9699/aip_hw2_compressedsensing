@@ -1,4 +1,5 @@
-barbara_img = imread('../HW2/barbara256.png');
+barbara_img = double(imread('../HW2/barbara256.png')) + 2*randn(256,256);
+
 lambda = 1;
 U = kron(dctmtx(8).', dctmtx(8).');
 
@@ -19,14 +20,18 @@ for patch_start_row = 1:(num_rows-patch_size+1) % Iterating over all possible pa
         
         y = phi * double(reshape(current_patch.',[1, 64]).');
         theta = 255*rand(64, 1);
-        %Check thresholding
-        for iter=1:1000
+        
+        % Implementing ISTA
+        iter=1;
+        norm_residual = 801;
+        while norm_residual>800 && iter<100
             theta = wthresh(theta + (1/alpha) * A.' * (y - A*theta), 's', lambda/(2*alpha));
+            residual = y - A*theta;
+            norm_residual = norm(residual);
+            iter = iter + 1;
         end
         
-        %Check DCT and conversions
         
-        % Converting DCT coeffs to image patch
         x = idct2( reshape(theta, [8,8]).' );
         
         % Rejoining the patches
@@ -39,6 +44,8 @@ for patch_start_row = 1:(num_rows-patch_size+1) % Iterating over all possible pa
             = (weights+1);
        
     end
-    disp(patch_start_row) 
 end
 imshow(uint8(reconstructed_frames))
+original_img = imread('../HW2/barbara256.png');
+% Displaying RMSE
+sqrt(sum((uint8(reconstructed_frames) - uint8(original_img)).^2))/sqrt(sum(uint8(original_img).^2))
